@@ -3,6 +3,7 @@ import {
   Form,
   useActionData,
   ActionFunctionArgs,
+  redirect,
 } from "react-router-dom";
 import ErrorMessage from "../components/ErrorMessage";
 import { addProduct } from "../services/ProductService";
@@ -20,8 +21,8 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     return error;
   }
 
-  addProduct(data);
-  return {};
+  await addProduct(data);
+  return redirect("/");
 };
 
 const NewProduct = () => {
