@@ -4,10 +4,12 @@ import {
   useActionData,
   ActionFunctionArgs,
   redirect,
-  useLocation,
+  LoaderFunctionArgs,
+  useLoaderData,
 } from "react-router-dom";
 import ErrorMessage from "../components/ErrorMessage";
-import { addProduct } from "../services/ProductService";
+import { addProduct, getProductById } from "../services/ProductService";
+import { Product } from "../types";
 
 export const action = async ({ request }: ActionFunctionArgs) => {
   const data = Object.fromEntries(await request.formData());
@@ -26,10 +28,22 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   return redirect("/");
 };
 
+export async function loader({ params }: LoaderFunctionArgs) {
+  if (params?.id) {
+    const product = await getProductById(params.id);
+
+    if (!product) {
+      throw new Response("", { status: 404, statusText: "Product not found" });
+    }
+    return product;
+  }
+}
+
 const EditProduct = () => {
   const error = useActionData() as string;
-  const { state } = useLocation();
-  console.log(state);
+
+  const product = useLoaderData() as Product;
+
   return (
     <>
       <div className="flex justify-between">
@@ -53,7 +67,7 @@ const EditProduct = () => {
             className="mt-2 block w-full p-3 bg-gray-50"
             placeholder="Nombre del Producto"
             name="name"
-            defaultValue={state.product?.name}
+            defaultValue={product.name}
           />
         </div>
         <div className="mb-4">
@@ -66,7 +80,7 @@ const EditProduct = () => {
             className="mt-2 block w-full p-3 bg-gray-50"
             placeholder="Precio Producto. ej. 200, 300"
             name="price"
-            defaultValue={state.product.price}
+            defaultValue={product.price}
           />
         </div>
         <input
