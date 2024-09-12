@@ -1,4 +1,4 @@
-import { safeParse } from "valibot";
+import { safeParse, number, parse, string, transform, pipe } from "valibot";
 import {
   DraftProductSchema,
   Product,
@@ -6,6 +6,7 @@ import {
   ProductsSchema,
 } from "../types";
 import axios from "axios";
+import { toBoolean } from "../utils";
 
 type ProductData = {
   [k: string]: FormDataEntryValue;
@@ -61,6 +62,32 @@ export async function getProductById(id: Product["id"]) {
 
     if (result.success) {
       return result.output;
+    } else {
+      throw new Error(
+        "There was an error while attempting to get product" + id
+      );
+    }
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+export async function updateProduct(data: ProductData, id: Product["id"]) {
+  try {
+    const NumberSchema = pipe(string(), transform(Number), number());
+
+    const result = safeParse(ProductSchema, {
+      id: parse(NumberSchema, id),
+      name: data.name,
+      price: parse(NumberSchema, data.price),
+      availability: toBoolean(data.availability.toString()),
+    });
+
+    console.log(result);
+
+    if (result.success) {
+      const url = `${import.meta.env.VITE_API_URL}/api/products/${id}`;
+      await axios.put(url, result.output);
     } else {
       throw new Error(
         "There was an error while attempting to get product" + id

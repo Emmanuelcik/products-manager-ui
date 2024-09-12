@@ -8,10 +8,15 @@ import {
   useLoaderData,
 } from "react-router-dom";
 import ErrorMessage from "../components/ErrorMessage";
-import { addProduct, getProductById } from "../services/ProductService";
+import { getProductById, updateProduct } from "../services/ProductService";
 import { Product } from "../types";
 
-export const action = async ({ request }: ActionFunctionArgs) => {
+const availabilityOptions = [
+  { name: "Disponible", value: true },
+  { name: "No Disponible", value: false },
+];
+
+export const action = async ({ request, params }: ActionFunctionArgs) => {
   const data = Object.fromEntries(await request.formData());
 
   let error = "";
@@ -24,8 +29,10 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     return error;
   }
 
-  await addProduct(data);
-  return redirect("/");
+  if (params?.id) {
+    await updateProduct(data, params?.id);
+    return redirect("/");
+  }
 };
 
 export async function loader({ params }: LoaderFunctionArgs) {
@@ -82,6 +89,24 @@ const EditProduct = () => {
             name="price"
             defaultValue={product.price}
           />
+        </div>
+
+        <div className="mb-4">
+          <label className="text-gray-800" htmlFor="availability">
+            Disponibilidad:
+          </label>
+          <select
+            id="availability"
+            className="mt-2 block w-full p-3 bg-gray-50"
+            name="availability"
+            defaultValue={product?.availability.toString()}
+          >
+            {availabilityOptions.map((option) => (
+              <option key={option.name} value={option.value.toString()}>
+                {option.name}
+              </option>
+            ))}
+          </select>
         </div>
         <input
           type="submit"
