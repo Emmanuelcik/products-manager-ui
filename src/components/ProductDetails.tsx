@@ -1,11 +1,22 @@
-import { useNavigate } from "react-router-dom";
+import {
+  ActionFunctionArgs,
+  Form,
+  redirect,
+  useNavigate,
+} from "react-router-dom";
 import { Product } from "../types";
 
 import { formatCurrency } from "../utils";
+import { deleteProduct } from "../services/ProductService";
 
 type ProductDetails = {
   product: Product;
 };
+
+export function action({ params }: ActionFunctionArgs) {
+  deleteProduct(params.id);
+  return redirect("/");
+}
 const ProductDetails = ({ product }: Product) => {
   const navigate = useNavigate();
   const isAvailable = product.availability;
@@ -24,13 +35,25 @@ const ProductDetails = ({ product }: Product) => {
             onClick={() =>
               navigate(`/products/${product.id}/edit`, { state: { product } })
             }
-            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-xs"
+            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-xs hover"
           >
             Edit
           </button>
-          <button className="ml-4 bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded text-xs">
-            Remove
-          </button>
+          <Form
+            method="POST"
+            action={`products/${product.id}/remove`}
+            onSubmit={(e) => {
+              if (!confirm("Remov?")) {
+                e.preventDefault();
+              }
+            }}
+          >
+            <input
+              type="submit"
+              value="Remove"
+              className="ml-4 bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded text-xs hover"
+            />
+          </Form>
         </div>
       </td>
     </tr>
