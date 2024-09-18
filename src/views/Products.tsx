@@ -1,5 +1,5 @@
-import { Link, useLoaderData } from "react-router-dom";
-import { getProducts } from "../services/ProductService";
+import { ActionFunctionArgs, Link, useLoaderData } from "react-router-dom";
+import { getProducts, updateAvailability } from "../services/ProductService";
 import ProductDetails from "../components/ProductDetails";
 import { Product } from "../types";
 
@@ -7,9 +7,14 @@ export async function loader() {
   const products = await getProducts();
   return products;
 }
+
+export async function action({ request }: ActionFunctionArgs) {
+  const data = Object.fromEntries(await request.formData());
+  await updateAvailability(data.id);
+  return {};
+}
 const Products = () => {
   const products = useLoaderData() as Product[];
-  console.log(products);
   return (
     <>
       <div className="flex justify-between">
